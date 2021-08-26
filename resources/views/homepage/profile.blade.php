@@ -70,8 +70,9 @@
                                                        </div>
                                                 </figure>												
                                                 <div class="description">
+                                                    <h5>Title</h5>
                                                     <p>
-                                                        Content Nam eget dui.
+                                                        Content .
                                                     </p>
                                                 </div>
                                                 <div class="we-video-info">

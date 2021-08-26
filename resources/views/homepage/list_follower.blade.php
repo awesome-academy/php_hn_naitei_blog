@@ -21,7 +21,7 @@
                                             <div class="row merged20">
                                                 <div class="col-lg-7 col-lg-7 col-sm-7">
                                                     <form method="post">
-                                                        <input type="text" placeholder="Search Friend">
+                                                        <input type="text" >
                                                         <button type="submit"><i class="fa fa-search"></i></button>
                                                     </form>
                                                 </div>
@@ -33,37 +33,39 @@
                             <div class="central-meta padding30">
                                 <div class="row">
                                     @foreach ($users as $user)
-                                        <div class="col-lg-3 col-md-6 col-sm-6">
-                                            <div class="friend-box">
-                                                <figure>
-                                                    <img src="{{ asset('bower_components/blog_template/images/resources/frnd-cover1.jpg') }}" alt="">
-                                                </figure>
-                                                <div class="frnd-meta">
-                                                    @foreach($user->images as $image)
-                                                        <img class="list_image" src="{{ asset($image->image_url) }}"  alt="">
-                                                    @endforeach
-                                                    <div class="frnd-name">
-                                                        <a href="#" title="">{{ $user->username }}</a>
-                                                    </div>
-                                                    <ul class="frnd-info">
-                                                        <li><span>{{ trans('homepage.follower') }}:</span> {{ $user->total_follower }}</li>
-                                                        <li><span>{{ trans('homepage.following') }}:</span> {{ $user->total_following }}</li>
-                                                        <li><span>{{ trans('homepage.post') }}:</span> {{ $user->total_story }}</li>
-                                                    </ul>
-                                                    <form action="{{ route('follow.destroy', $user->id)}}" method="Post">
-                                                        @method('Delete')
-                                                        @csrf
-                                                        <button class="btn-danger d-flex follow" onclick="return confirm('Are you sure ?')">{{ trans('homepage.unfollow') }}</button>
-                                                    </form> 
-                                                    <div class="more-opotnz">
-                                                        <i class="fa fa-ellipsis-h"></i>
-                                                        <ul>
-                                                            <li><a href="#" title="">{{ trans('homepage.hide_friend') }}</a></li>
+                                        @if($user->follows !=Null)
+                                            <div class="col-lg-3 col-md-6 col-sm-6">
+                                                <div class="friend-box">
+                                                    <figure>
+                                                        <img src="{{ asset('bower_components/blog_template/images/resources/frnd-cover1.jpg') }}" alt="">
+                                                    </figure>
+                                                    <div class="frnd-meta">
+                                                        @foreach($user->images as $image)
+                                                            <img class="list_image" src="{{ asset($image->image_url) }}"  alt="">
+                                                        @endforeach
+                                                        <div class="frnd-name">
+                                                            <a href="#" title="">{{ $user->username }}</a>
+                                                        </div>
+                                                        <ul class="frnd-info">
+                                                            <li><span>{{ trans('homepage.follower') }}:</span> {{ $user->total_follower }}</li>
+                                                            <li><span>{{ trans('homepage.following') }}:</span> {{ $user->total_following }}</li>
+                                                            <li><span>{{ trans('homepage.post') }}:</span> {{ $user->total_story }}</li>
                                                         </ul>
+                                                        <form action="{{ route('follow.destroy', $user->id)}}" method="Post">
+                                                            @method('Delete')
+                                                            @csrf
+                                                            <button class="btn-danger d-flex follow">{{ trans('homepage.unfollow') }}</button>
+                                                        </form> 
+                                                        <div class="more-opotnz">
+                                                            <i class="fa fa-ellipsis-h"></i>
+                                                            <ul>
+                                                                <li><a href="#" title="">{{ trans('homepage.hide_friend') }}</a></li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     @endforeach
                                 </div>
                                 <div class="lodmore">

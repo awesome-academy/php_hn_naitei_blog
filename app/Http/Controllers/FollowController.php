@@ -8,32 +8,26 @@ use App\Http\Controllers\Auth;
 
 class FollowController extends Controller
 {
-    public function ListFollower()
+    public function listFollower()
     {
-        $followers = Follow::where('following_id', Auth::id())->get();
-        $users = [];
-        foreach($followers as $follower){
-            array_push($users, $follower->user );
-        }
+        $users = User::join('follows', 'follows.following_id', '=', 'users.id')
+                ->where('follows.following_id', Auth::id())->get();
 
         return view('homepage.list_follower', compact('users'));
     }
 
-    public function ListFollowing()
+    public function listFollowing()
     {
-        $followers = Follow::where('user_id', Auth::id())->get();
-        $users = [];
-        foreach($followers as $follower){
-            array_push($users, $follower->user );
-        }
-
+        $users = User::join('follows', 'follows.following_id', '=', 'users.id')
+                ->where('follows.user_id', Auth::id())->get();
+       
         return view('homepage.list_following', compact('users'));
     }
 
-    public function follow( $id)
+    public function follow($id)
     {
         $followDataArray = array(
-            "user_id" => Auth::id(),
+            "user_id" => Auth::(),
             "following_id" => $id,
         );
         Follow::create($followDataArray);

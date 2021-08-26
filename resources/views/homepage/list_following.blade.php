@@ -21,7 +21,7 @@
                                             <div class="row merged20">
                                                 <div class="col-lg-7 col-lg-7 col-sm-7">
                                                     <form method="post">
-                                                        <input type="text" placeholder="Search Friend">
+                                                        <input type="text">
                                                         <button type="submit"><i class="fa fa-search"></i></button>
                                                     </form>
                                                 </div>
@@ -53,7 +53,7 @@
                                                     <form action="{{ route('follow.add', $user->id)}}" method="Post">
                                                         @method('POST')
                                                         @csrf
-                                                        <button class="btn-danger d-flex follow" onclick="return confirm('Are you sure ?')">{{ trans('homepage.follow') }}</button>
+                                                        <button class="btn-danger d-flex follow">{{ trans('homepage.follow') }}</button>
                                                     </form> 
                                                     <div class="more-opotnz">
                                                         <i class="fa fa-ellipsis-h"></i>

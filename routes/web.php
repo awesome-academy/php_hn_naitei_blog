@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('homepage.profile');
 });
-Route::get('following', 'FollowController@ListFollowing')->name('follow.following');
+Route::get('following', 'FollowController@listFollowing')->name('follow.following');
 Route::post('following/{id}', 'FollowController@follow')->name('follow.add');
-Route::delete('follower/{id}','FollowController@destroy')->name('follow.destroy');
-Route::get('follower', 'FollowController@ListFollower')->name('follow.follower');
+Route::delete('follower/{id}', 'FollowController@destroy')->name('follow.destroy');
+Route::get('follower', 'FollowController@listFollower')->name('follow.follower');
