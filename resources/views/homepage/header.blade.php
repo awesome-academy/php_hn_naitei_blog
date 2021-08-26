@@ -99,10 +99,10 @@
                                             <a class="" href="#">{{ trans('homepage.profile') }}</a>
                                         </li>
                                         <li>
-                                            <a class="" href="#">{{ trans('homepage.follower') }}</a>
+                                            <a class="" href="{{ route('follow.follower') }}">{{ trans('homepage.follower') }}</a>
                                         </li>
                                         <li>
-                                            <a class="" href="#">{{ trans('homepage.following') }}</a>
+                                            <a class="" href="{{ route('follow.following') }}">{{ trans('homepage.following') }}</a>
                                         </li>
                                         <li>
                                             <a class="" href="#">{{ trans('homepage.bookmark') }}</a>

@@ -74,11 +74,30 @@ class User extends Authenticatable
 
     public function follows()
     {
-        return $this->hasMany(Follow::class);
+        return $this->hasMany(Follow::class, 'user_id');
     }
 
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function getTotalStoryAttribute()
+    {
+        $check = Story::where("users_id", $this->id)->count();
+
+        return $check;
+    }
+
+    public function getTotalFollowerAttribute()
+    {
+        $check = Follow::where("following_id", $this->id)->count();
+
+        return $check;
+    }
+
+    public function getTotalFollowingAttribute()
+    {
+        return $this->follows()->count();
     }
 }

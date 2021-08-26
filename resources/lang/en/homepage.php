@@ -35,5 +35,5 @@ return [
     'profile' => 'Profile',
     'public' => 'Public',
     'draft' => 'Draft',
-    
+    'hide_friend'=> 'hide from friend list'
 ];
