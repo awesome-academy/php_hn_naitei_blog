@@ -18,7 +18,6 @@ Route::get('/', function () {
 });
 
 Route::resource('stories', 'StoryController');
-Route::post('stories/update/{id}', 'StoryController@update')->name('story.update');
-
 Auth::routes();
+
 Route::get('/home', 'HomeController@index')->name('home');

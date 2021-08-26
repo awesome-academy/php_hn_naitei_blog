@@ -32,8 +32,8 @@ class StoryRequest extends FormRequest
     public function messages()
     {
         return [
-            'title.required' =>'Title Not empty',
-            'content.required' => 'Content Not empty',
+            'title.required' => trans('message.title_required'),
+            'content.required' => trans('message.content_required'),
         ];
     }
 }

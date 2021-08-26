@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Story;
-use App\Models\Image;
 use App\Models\Category;
 use App\Http\Controllers\Auth;
 use App\Http\Requests\StoryRequest;
