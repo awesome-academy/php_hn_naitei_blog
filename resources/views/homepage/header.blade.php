@@ -56,7 +56,15 @@
                     <ul class="log-out">
                         <li><a href="#" title=""><i class="ti-user"></i>{{ trans('homepage.user_setting') }}</a></li>
                         <li><a href="#" title=""><i class="ti-pencil-alt"></i>{{ trans('homepage.view_profile') }}</a></li>
-                        <li><a href="#" title=""><i class="ti-power-off"></i>{{ trans('homepage.log_out') }}</a></li>
+                        <li>
+                            <a href="{{ route('logout') }}" onclick="event.preventDefault();
+                                document.getElementById('logout-form').submit();" title="">
+                                <i class="ti-power-off"></i>{{ trans('homepage.log_out') }}
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

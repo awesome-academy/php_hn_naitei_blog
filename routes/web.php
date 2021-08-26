@@ -20,3 +20,7 @@ Route::get('following', 'FollowController@listFollowing')->name('follow.followin
 Route::post('following/{id}', 'FollowController@follow')->name('follow.add');
 Route::delete('follower/{id}', 'FollowController@destroy')->name('follow.destroy');
 Route::get('follower', 'FollowController@listFollower')->name('follow.follower');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
