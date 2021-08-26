@@ -17,25 +17,21 @@ class Story extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'title',
-        'status',
-        'content',
-    ];
+    protected $guarded = [];
 
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, 'categories_id');
     }
 
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class, 'stories_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'users_id');
     }
 
     public function likes()
@@ -51,5 +47,16 @@ class Story extends Model
     public function images()
     {
         return $this->morphMany(Image::class, 'imageable');
+    }
+
+
+    public function getTotalCommentAttribute()
+    {
+        return $this->comments()->count();
+    }
+
+    public function getTotalLikeAttribute()
+    {
+        return $this->likes()->count();
     }
 }

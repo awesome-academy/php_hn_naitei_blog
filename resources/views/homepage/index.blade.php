@@ -94,7 +94,7 @@
                         <div class="col-lg-8">
                             <div class="central-meta postbox">
                                 <span class="create-post">{{ trans('homepage.create_post') }}</span>
-                                <form action="" method="post" enctype="multipart/form-data">
+                                <form action="{{ route('stories.store') }}" method="post" enctype="multipart/form-data">
                                     @csrf
                                     <div class="new-postbox">
                                         <div class="more">
@@ -111,21 +111,30 @@
                                         <div class="newpst-input">
                                             <label>{{ trans('homepage.title') }}</label>
                                             <input class="px-5" type="text" name="title">
-                                            <textarea rows="2" placeholder="Share some what you are thinking?"></textarea>
+                                            @if ($errors->has('title'))
+                	                            <div class="alert alert-danger">
+                                                    {{ $errors->first('title') }}
+                	                            </div>
+                                            @endif
+                                            <textarea rows="2" name="content"></textarea>
+                                            @if ($errors->has('content'))
+                                                <div class="alert alert-danger">
+                                                    {{ $errors->first('content') }}
+                                                </div>
+                                            @endif
                                         </div>
                                         <div class="attachments">
                                             <ul>
                                                 <li>
                                                     <i class="fa fa-image"></i>
-                                                    <label class="fileContainer"><input type="file" multiple></label>
+                                                    <label class="fileContainer"><input type="file"  name="photos[]" multiple></label>
                                                 </li>
                                                 <li>
                                                     <select name="category" id="category">
                                                         <option value=""></option>
-                                                        <option value="volvo"></option>
-                                                        <option value="saab"></option>
-                                                        <option value="opel"></option>
-                                                        <option value="audi"></option>
+                                                        @foreach($categories as $category)
+                                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                        @endforeach
                                                     </select>
                                                 </li>
                                             </ul>
@@ -138,101 +147,118 @@
                                 <div class="central-meta item">
                                     <div class="user-post">
                                         <div class="friend-info">
-                                            <figure>
-                                                <img src="{{ asset('bower_components/blog_template/images/resources/nearly1.jpg') }}" alt="">
-                                            </figure>
-                                            <div class="friend-name">
-                                                <div class="more">
-                                                    <div class="more-post-optns"><i class="ti-more-alt"></i>
+                                            @foreach($stories as $story)
+                                                <figure>
+                                                    @foreach($story->user->images as $image)
+                                                        <img src="{{ asset($image->image_url) }}" alt="">
+                                                    @endforeach
+                                                </figure>
+                                                <div class="friend-name">
+                                                    <div class="more">
+                                                        <div class="more-post-optns"><i class="ti-more-alt"></i>
+                                                            <ul>
+                                                                <li><a href="{{ route('stories.edit', $story->id) }}"><i class="fa fa-pencil-square-o"></i>{{ trans('homepage.edit_post') }}</a></li>
+                                                                <li>
+                                                                    <form action="{{ route('stories.destroy', $story->id)}}" method="Post">
+                                                                        @method('Delete')
+                                                                        @csrf
+                                                                        <button class="btn-danger">{{ trans('homepage.delete_post') }}</button>
+                                                                    </form> 
+                                                                </li>
+                                                                <li><i class="far fa-bookmark"></i>{{ trans('homepage.bookmark') }}</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <ins><a href="#" title="">{{ $story->user->username }}</a><br>
+                                                    <span><i class="fa fa-globe"></i> {{ $story->status }}: {{ $story->created_at }} </span><br>
+                                                    <span>{{ trans('homepage.category') }}: {{ $story->category->name }}</span>
+                                                </div>
+                                                <div class="post-meta">
+                                                    @if(count($story->images)>0)
+                                                        <figure >
+                                                            @if(count($story->images)==1)
+                                                                <img src="{{ asset( $story->images[0]->image_url ) }}" >
+                                                            @endif
+                                                            @if(count($story->images)>1)
+                                                                <div id="demo"  class="carousel slide row"  data-ride="carousel"> 
+                                                                    <div class="carousel-inner col-12" >
+                                                                        <div class="carousel-item active">
+                                                                            <img src="{{ asset( $story->images[0]->image_url ) }}" >
+                                                                        </div>
+                                                                        {{ $k=1 }}
+                                                                        @while ($k < count($story->images))
+                                                                            <div class="carousel-item ">
+                                                                                <img src="{{ asset( $story->images[$k]->image_url ) }}" >
+                                                                            </div>
+                                                                            {{ $k++ }}
+                                                                        @endwhile
+                                                                    </div>
+                                                                    <a class="carousel-control-prev" href="#demo" data-slide="prev">
+                                                                        <span class="carousel-control-prev-icon"></span>
+                                                                    </a>
+                                                                    <a class="carousel-control-next" href="#demo" data-slide="next">
+                                                                        <span class="carousel-control-next-icon"></span>
+                                                                    </a>
+                                                                </div>
+                                                            @endif
+                                                        </figure>
+                                                    @endif												
+                                                    <div class="description">
+                                                        <a href="{{ route('stories.show', [$story->id]) }}"><h6>{{ $story->title }}</h6></a><br>
+                                                        <p>
+                                                            {{ $story->content }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="we-video-info">
                                                         <ul>
-                                                            <li><i class="fa fa-pencil-square-o"></i>{{ trans('homepage.edit_post') }}</li>
-                                                            <li><i class="fa fa-trash-o"></i>{{ trans('homepage.delete_post') }}</li>
-                                                            <li><i class="far fa-bookmark"></i>{{ trans('homepage.bookmark') }}</li>
-                                                        </ul>
+                                                            <li>
+                                                                <div class="likes heart" title="Like/Dislike">❤ <span>{{ $story->total_like }}</span></div>
+                                                            </li>
+                                                            <li>
+                                                                <span class="comment" title="Comments">
+                                                                    <i class="fa fa-commenting"></i>
+                                                                    <ins>{{ $story->total_comment }}</ins>
+                                                                </span>
+                                                            </li>
+                                                        </ul>									
                                                     </div>
                                                 </div>
-                                                <ins><a href="#" title="">{{ trans('homepage.user_name') }}</a>
-                                                <span><i class="fa fa-globe"></i> {{ trans('homepage.status') }}: {{ trans('homepage.time') }} </span>
-                                            </div>
-                                            <div class="post-meta">
-                                                <figure >
-                                                    <div id="demo"  class="carousel slide row"  data-ride="carousel"> 
-                                                        <div class="carousel-inner col-12" >
-                                                            <div class="carousel-item">
-                                                                <img src="{{ asset('bower_components/blog_template/images/resources/userlist-1.jpg') }}" >
+                                                <div class="coment-area" >
+                                                    <ul class="we-comet">
+                                                        @foreach($story->comments as $comment)
+                                                            <li>
+                                                                <div class="comet-avatar">
+                                                                    @foreach($comment->user->images as $image)
+                                                                        <img src="{{ asset($image->image_url) }}" alt="">
+                                                                    @endforeach
+                                                                </div>
+                                                                <div class="we-comment">
+                                                                    <h5><a href="#" title="">{{ $comment->user->username }}</a></h5>
+                                                                    <p>{{ $comment->content }}</p>
+                                                                    <div class="inline-itms">
+                                                                        <span>{{ $comment->created_at}}</span>
+                                                                        <a class="we-reply" href="#" title="Reply"><i class="fa fa-reply"></i></a>
+                                                                    </div>
+                                                                </div>
+                                                            </li>
+                                                        @endforeach
+                                                        <li class="post-comment">
+                                                            <div class="comet-avatar">
+                                                                <img src="{{ asset('bower_components/blog_template/images/resources/nearly1.jpg') }}" alt="">
                                                             </div>
-                                                            <div class="carousel-item active carousel-item-left">
-                                                                <img src="{{ asset('bower_components/blog_template/images/resources/userlist-1.jpg') }}" >
+                                                            <div class="post-comt-box">
+                                                                <form method="post">
+                                                                    <textarea></textarea>
+                                                                    <button type="submit"></button>
+                                                                </form>	
                                                             </div>
-                                                        </div>
-                                                        <a class="carousel-control-prev" href="#demo" data-slide="prev">
-                                                            <span class="carousel-control-prev-icon"></span>
-                                                        </a>
-                                                        <a class="carousel-control-next" href="#demo" data-slide="next">
-                                                            <span class="carousel-control-next-icon"></span>
-                                                        </a>
-                                                    </div>
-                                                </figure>												
-                                                <div class="description">
-                                                    <p>{{ trans('homepage.content') }}</p>
-                                                </div>
-                                                <div class="we-video-info">
-                                                    <ul>
-                                                        <li>
-                                                            <div class="likes heart" title="Like/Dislike">❤ <span>2K</span></div>
                                                         </li>
-                                                        <li>
-                                                            <span class="comment" title="Comments">
-                                                                <i class="fa fa-commenting"></i>
-                                                                <ins>52</ins>
-                                                            </span>
-                                                        </li>
-                                                    </ul>									
+                                                    </ul>
                                                 </div>
-                                            </div>
-                                            <div class="coment-area" >
-                                                <ul class="we-comet">
-                                                    <li>
-                                                        <div class="comet-avatar">
-                                                            <img src="{{ asset('bower_components/blog_template/images/resources/nearly3.jpg') }}" alt="">
-                                                        </div>
-                                                        <div class="we-comment">
-                                                            <h5><a href="#" title="">{{ trans('homepage.user_name') }}</a></h5>
-                                                            <p>{{ trans('homepage.content') }}</p>
-                                                            <div class="inline-itms">
-                                                                <span>{{ trans('homepage.time') }}</span>
-                                                                <a class="we-reply" href="#" title="Reply"><i class="fa fa-reply"></i></a>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="comet-avatar">
-                                                            <img src="{{ asset('bower_components/blog_template/images/resources/comet-4.jpg') }}" alt="">
-                                                        </div>
-                                                        <div class="we-comment">
-                                                            <h5><a href="#" title="">{{ trans('homepage.user_name') }}</a></h5>
-                                                            <p>{{ trans('homepage.content') }}.</p>
-                                                            <div class="inline-itms">
-                                                                <span>{{ trans('homepage.time') }}</span>
-                                                                <a class="we-reply" href="#" title="Reply"><i class="fa fa-reply"></i></a>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li class="post-comment">
-                                                        <div class="comet-avatar">
-                                                            <img src="{{ asset('bower_components/blog_template/images/resources/nearly1.jpg') }}" alt="">
-                                                        </div>
-                                                        <div class="post-comt-box">
-                                                            <form method="post">
-                                                                <textarea placeholder="Post your comment"></textarea>
-                                                                <button type="submit"></button>
-                                                            </form>	
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            @endforeach
                                         </div>
                                     </div>
+                                    {{$stories->links("pagination::bootstrap-4")}}
                                 </div>
                             </div>
                         </div>
