@@ -35,5 +35,9 @@ return [
     'profile' => 'Profile',
     'public' => 'Public',
     'draft' => 'Draft',
-    
+    'edit_story' => 'Edit Story',
+    'title' => 'Title',
+    'content_story' => 'Content',
+    'avatar' => 'Image',
+    'category' => 'Category',
 ];

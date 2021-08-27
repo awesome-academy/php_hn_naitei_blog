@@ -21,11 +21,11 @@ class Comment extends Model
 
     public function story()
     {
-        return $this->belongsTo(Story::class);
+        return $this->belongsTo(Story::class, 'stories_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'users_id');
     }
 }

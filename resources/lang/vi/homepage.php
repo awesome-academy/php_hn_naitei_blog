@@ -35,4 +35,9 @@ return [
     'profile' => 'Thông tin cá nhân',
     'public' => 'Công khai',
     'draft' => 'Nháp',
+    'edit_story' => 'Chỉnh sửa bài viết',
+    'title' => 'Tiêu đề',
+    'content_story' => 'Nội dung',
+    'avatar' => 'Ảnh',
+    'category' => 'Thể loại',
 ];
