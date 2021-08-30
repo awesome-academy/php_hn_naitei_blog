@@ -29,3 +29,7 @@ Route::group(['prefix' => 'admin'], function () {
         'show' => 'read_user',
     ]);
 });
+Route::get('following', 'FollowController@ListFollowing')->name('follow.following');
+Route::post('following/{id}', 'FollowController@follow')->name('follow.add');
+Route::delete('follower/{id}', 'FollowController@destroy')->name('follow.destroy');
+Route::get('follower', 'FollowController@ListFollower')->name('follow.follower');

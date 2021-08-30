@@ -81,4 +81,23 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class, 'roles_id');
     }
+
+    public function getTotalStoryAttribute()
+    {
+        $check = Story::where ("users_id", $this->id )->count();
+
+        return $check;
+    }
+
+    public function getTotalFollowerAttribute()
+    {
+        $check = Follow::where ("following_id", $this->id )->count();
+
+        return $check;
+    }
+
+    public function getTotalFollowingAttribute()
+    {
+        return $this->follows()->count();
+    }
 }
