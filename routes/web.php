@@ -31,10 +31,5 @@ Route::group(['prefix' => 'admin'], function () {
         'show' => 'read_user',
     ]);
 });
+
 Route::get('profile', 'HomeController@viewProfile')->name('profile');
-Route::get('following', 'FollowController@listFollowing')->name('follow.following');
-Route::get('follower', 'FollowController@listFollower')->name('follow.follower');
-Route::middleware(['auth'])->group(function () {
-    Route::post('following/{id}', 'FollowController@follow')->name('follow.add');
-    Route::delete('follower/{id}', 'FollowController@destroy')->name('follow.destroy');
-});

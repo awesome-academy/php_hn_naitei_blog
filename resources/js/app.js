@@ -5,8 +5,6 @@
  */
 
 require('./bootstrap');
-require('./following');
-require('./follow');
 
 window.Vue = require('vue');
 
