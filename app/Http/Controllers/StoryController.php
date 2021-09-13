@@ -8,17 +8,16 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoryRequest;
+use App\Repositories\Contracts\StoryRepositoryInterface;
 
 class StoryController extends Controller
 {
-    public function __construct()
+    protected $storyRepository;
+
+    public function __construct(StoryRepositoryInterface $storyRepository)
     {
         $this->middleware('auth');
-    }
-
-    public function index()
-    {
-        abort(404);
+        $this->storyRepository = $storyRepository;
     }
 
     public function store(StoryRequest $request)
@@ -31,11 +30,11 @@ class StoryController extends Controller
                 "users_id" => Auth::id(),
             );
            
-            $story = Story::create($storyDataArray);
+            $story = $this->storyRepository->create($storyDataArray);
             if ($request->photos != null) {
                 foreach ($request->photos as $photo) {
                     $newImageName = 'storage/image/' .uniqid() . '.' . $photo->extension();
-                    $photo->move(public_path('storage/image'), $newImageName);
+                    Storage::disk('public')->put($newImageUrl, file_get_contents($photo));
                     $story->images()->create([
                        'image_url' => $newImageName,
                     ]);
@@ -50,7 +49,7 @@ class StoryController extends Controller
 
     public function show($id)
     {
-        $story= Story::findOrFail($id);
+        $story= $this->storyRepository->findOrFail($id);
         $user = $story->user;
 
         return view('homepage.story_detail', compact('story', 'user'));
@@ -58,7 +57,7 @@ class StoryController extends Controller
 
     public function edit($id)
     {
-        $story = Story::findOrFail($id);
+        $story = $this->storyRepository->findOrFail($id);
         $this->authorize('update', $story);
         $categories = Category::all();
 
@@ -67,7 +66,7 @@ class StoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $story = Story::findOrFail($id);
+        $story = $this->storyRepository->findOrFail($id);
         $this->authorize('update', $story);
 
         $story->update([
@@ -92,11 +91,11 @@ class StoryController extends Controller
 
     public function destroy($id)
     {
-        $story = Story::findOrFail($id);
+        $story = $this->storyRepository->findOrFail($id);
         $this->authorize('delete', $story);
 
         $story->images()->delete();
-        Story::withTrashed()->where('id', $id)->forceDelete();
+        $this->storyRepository->forceDelete();
 
         return response()->json([
             'success' =>  trans('message.delete_success')
