@@ -4,79 +4,84 @@ namespace Tests\Unit\Http\Controllers;
 
 use Tests\TestCase;
 use Mockery as m;
-use App\Http\Controllers\StoryController;
-use App\Repositories\Contracts\StoryRepositoryInterface;
-use App\Http\Requests\StoryRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\UploadedFile;
+use App\Http\Controllers\StoryController;
+use App\Repositories\Contracts\StoryRepositoryInterface;
+use App\Http\Requests\StoryRequest;
 use App\Models\Story;
 use App\Models\User;
 
 class StoryControllerTest extends TestCase
 {
-    protected $storyController, $storyRepositoryMock;
+    protected $storyController;
+    protected $storyRepositoryMock;
 
     public function setUp(): void
     {
-        $this->afterApplicationCreated(function() {
+        parent::setUp();
+        $this->afterApplicationCreated(function () {
             $this->storyRepositoryMock = m::mock(StoryRepositoryInterface::class)->makePartial();
 
             $this->storyController = new StoryController(
                 $this->app->instance(StoryRepositoryInterface::class, $this->storyRepositoryMock)
             );
         });
-        parent::setUp();
     }
 
     public function tearDown(): void
     {
         m::close();
+        $this->storyController = null;
+        $this->storyRepositoryMock = null;
         parent::tearDown();
     }
 
     public function testItStoresNewStory()
     {
         $this->assertInstanceOf(StoryController::class, $this->storyController);
-
-        $request = new StoryRequest();
-        $request['category'] = 1;
-        $request['content'] = 'content';
-        $request['status'] = 'public';
-
-        $user = m::mock(User::class)->makePartial();
-        $user->shouldReceive('getAttribute')->with('id')->andReturn(2);
-        $user->shouldReceive('getAttribute')->with('username')->andReturn('trang');
-        $user->shouldReceive('getAttribute')->with('email')->andReturn('trang@gmail.com');
-        $user->shouldReceive('getAttribute')->with('status')->andReturn(1);
+        $user = factory(User::class)->make([
+            'id' => 2,
+            'status' => 1,
+            'roles_id' => 2,
+        ]);
         $this->actingAs($user);
 
-        $data = [
-            "categories_id" => 1,
-            "content" => 'content',
-            "status" => 'public',
-            "users_id" => Auth::id(),
-        ];
+        $story = factory(Story::class)->make([
+            'id' => 1,
+            'users_id' => Auth::id(),
+        ]);
 
-        if ($user->status == 1) {
-            $this->storyRepositoryMock->shouldReceive('create')->with($data)->once()->andReturn();
-            
-            // Storage::extend('mock', function() {
-            //     return \Mockery::mock(\Illuminate\Contracts\Filesystem\Filesystem::class);
-            // });
-    
-            // Config::set('filesystems.disks.mock', ['driver' => 'mock']);
-            // Config::set('filesystems.default', 'mock');
-            // $storage = Storage::disk();
-            // $storage->shouldReceive('put')->with('image.jpg', )->once();
-
-            $result = $this->storyController->store($request);
-            $this->assertInstanceOf(RedirectResponse::class, $result);
-            $this->assertEquals(route('home'), $result->getTargetUrl());
-        } else {
-
-        }
+        $request = new StoryRequest();
+        $request['category'] = $story->categories_id;
+        $request['content'] = $story->content;
+        $request['status'] = $story->status;
         
+        $this->storyRepositoryMock->shouldReceive('create')->with([
+            'categories_id' => $request->category,
+            'content' => $request->content,
+            'status' => $request->status,
+            'users_id' => Auth::id(),
+        ])->once()->andReturn($story);
+
+        Storage::fake('photos');
+        $img = UploadedFile::fake()->image('image.jpg');
+        $request['photos'] = $img;
+
+        $result = $this->storyController->store($request);
+        $this->assertInstanceOf(RedirectResponse::class, $result);
+        $this->assertEquals(route('home'), $result->getTargetUrl());
+    }
+
+    public function testUnauthorStoreStory()
+    {
+        $request = new StoryRequest();
+        $result = $this->storyController->store($request);
+        $this->assertEquals('Unauthorizaed action.', $result->original);
     }
 
     public function testItShowStory()
@@ -93,16 +98,18 @@ class StoryControllerTest extends TestCase
 
     public function testItEditStory()
     {
-        $user = m::mock(User::class)->makePartial();
-        $user->shouldReceive('getAttribute')->with('id')->andReturn(2);
-        $user->shouldReceive('getAttribute')->with('username')->andReturn('trang');
-        $user->shouldReceive('getAttribute')->with('email')->andReturn('trang@gmail.com');
-        $user->shouldReceive('getAttribute')->with('status')->andReturn(1);
+        $user = factory(User::class)->make([
+            'id' => 2,
+            'status' => 1,
+            'roles_id' => 2,
+        ]);
         $this->actingAs($user);
 
-        $story = m::mock(Story::class)->makePartial();
-        $story->shouldReceive('getAttribute')->with('users_id')->andReturn(Auth::id());
-        $story->shouldReceive('getAttribute')->with('id')->andReturn(1);
+        $story = factory(Story::class)->make([
+            'id' => 1,
+            'users_id' => Auth::id(),
+        ]);
+
         $this->storyRepositoryMock->shouldReceive('findOrFail')->with($story->id)->andReturn($story);
 
         $result = $this->storyController->edit($story->id);
@@ -115,19 +122,94 @@ class StoryControllerTest extends TestCase
 
     public function testItUpdateStory()
     {
-        $user = m::mock(User::class)->makePartial();
-        $user->shouldReceive('getAttribute')->with('id')->andReturn(2);
-        $user->shouldReceive('getAttribute')->with('username')->andReturn('trang');
-        $user->shouldReceive('getAttribute')->with('email')->andReturn('trang@gmail.com');
-        $user->shouldReceive('getAttribute')->with('status')->andReturn(1);
+        $user = factory(User::class)->make([
+            'id' => 2,
+            'status' => 1,
+            'roles_id' => 2,
+        ]);
         $this->actingAs($user);
 
-        $story = m::mock(Story::class)->makePartial();
-        $story->shouldReceive('getAttribute')->with('users_id')->andReturn(Auth::id());
-        $story->shouldReceive('getAttribute')->with('id')->andReturn(1);
+        $story = factory(Story::class)->make([
+            'id' => 3,
+            'users_id' => Auth::id(),
+        ]);
+
         $this->storyRepositoryMock->shouldReceive('findOrFail')->with($story->id)->andReturn($story);
     
-        
+        $request = new Request();
+        $request['id'] = 1;
+        $request['content'] = $story->content;
+        $request['status'] = $story->status;
+        $request['users_id'] = Auth::id();
+
+        Storage::fake('photos');
+        $img = UploadedFile::fake()->image('photo.jpg');
+        $request['photos'] = $img;
+
+        $result = $this->storyController->update($request, $story->id);
+        $this->assertInstanceOf(RedirectResponse::class, $result);
+        $this->assertEquals(route('stories.show', $story->id), $result->getTargetUrl());
     }
-    
+
+    public function testDestroyStory()
+    {
+        $user = factory(User::class)->make([
+            'id' => 2,
+            'status' => 1,
+            'roles_id' => 2,
+        ]);
+        $this->actingAs($user);
+
+        $story = factory(Story::class)->make([
+            'id' => 3,
+            'users_id' => Auth::id(),
+        ]);
+
+        $this->storyRepositoryMock->shouldReceive('findOrFail')->with($story->id)->andReturn($story);
+        $this->storyRepositoryMock->shouldReceive('forceDelete')->with($story->id);
+
+        $result = $this->storyController->destroy($story->id);
+        $this->assertIsArray($result->original);
+        $this->assertArrayHasKey('success', $result->original);
+    }
+
+    public function testHideStory()
+    {
+        $user = factory(User::class)->make([
+            'id' => 2,
+            'status' => 1,
+            'roles_id' => 2,
+        ]);
+        $this->actingAs($user);
+        $story = factory(Story::class)->make([
+            'id' => 3,
+            'users_id' => Auth::id(),
+        ]);
+
+        $this->storyRepositoryMock->shouldReceive('delete')->with($story->id)->andReturn($story);
+        $result = $this->storyController->hideStory($story->id);
+        $this->assertIsArray($result->original);
+        $this->assertArrayHasKey('message', $result->original);
+    }
+
+    public function testHideStoryFail()
+    {
+        $user = factory(User::class)->make([
+            'id' => 2,
+            'status' => 1,
+            'roles_id' => 2,
+        ]);
+        $this->actingAs($user);
+        $id = rand();
+        $this->storyRepositoryMock->shouldReceive('delete')->with($id)->andReturn(null);
+        $result = $this->storyController->hideStory($id);
+        $this->assertIsArray($result->original);
+        $this->assertArrayHasKey('message', $result->original);
+    }
+
+    public function testUnauthorHideStory()
+    {
+        $result = $this->storyController->hideStory(1);
+        $this->assertEquals('Unauthorizaed action.', $result->original);
+    }
 }

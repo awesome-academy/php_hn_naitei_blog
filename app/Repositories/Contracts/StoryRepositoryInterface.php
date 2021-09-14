@@ -8,4 +8,5 @@ interface StoryRepositoryInterface
     public function findOrFail($id);
     public function create($data);
     public function forceDelete($id);
+    public function delete($id);
 }

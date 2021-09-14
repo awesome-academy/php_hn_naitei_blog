@@ -27,4 +27,13 @@ class StoryRepository implements StoryRepositoryInterface
         return Story::withTrashed()->where('id', $id)->forceDelete();
     }
 
+    public function delete($id)
+    {
+        $story = Story::findOrFail($id);
+        if ($story != null) {
+            return $story->delete();
+        } else {
+            return null;
+        }
+    }
 }

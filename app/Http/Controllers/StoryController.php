@@ -23,18 +23,18 @@ class StoryController extends Controller
     public function store(StoryRequest $request)
     {
         if (Gate::allows('is-active')) {
-            $storyDataArray = array(
+            $storyDataArray = [
                 "categories_id" => $request->category,
                 "content" => $request->content,
                 "status" => $request->status,
                 "users_id" => Auth::id(),
-            );
+            ];
            
             $story = $this->storyRepository->create($storyDataArray);
             if ($request->photos != null) {
-                foreach ($request->photos as $photo) {
+                foreach (array($request->photos) as $photo) {
                     $newImageName = 'storage/image/' .uniqid() . '.' . $photo->extension();
-                    Storage::disk('public')->put($newImageUrl, file_get_contents($photo));
+                    $photo->move(public_path('storage/image'), $newImageName);
                     $story->images()->create([
                        'image_url' => $newImageName,
                     ]);
@@ -43,7 +43,7 @@ class StoryController extends Controller
     
             return redirect()->route('home')->with('message', trans('message.create_success'));
         } else {
-            abort(403);
+            return response('Unauthorizaed action.', 403);
         }
     }
 
@@ -75,8 +75,8 @@ class StoryController extends Controller
         ]);
         if ($request->photos != null) {
             $story->images()->delete();
-            if (count($request->photos) > 0) {
-                foreach ($request->photos as $photo) {
+            if (count(array($request->photos)) > 0) {
+                foreach (array($request->photos) as $photo) {
                     $newImageName = 'storage/image/' .uniqid() . '.' . $photo->extension();
                     $photo->move(public_path('storage/image'), $newImageName);
                     $story->images()->create([
@@ -95,7 +95,7 @@ class StoryController extends Controller
         $this->authorize('delete', $story);
 
         $story->images()->delete();
-        $this->storyRepository->forceDelete();
+        $this->storyRepository->forceDelete($id);
 
         return response()->json([
             'success' =>  trans('message.delete_success')
@@ -105,7 +105,7 @@ class StoryController extends Controller
     public function hideStory($id)
     {
         if (Gate::allows('is-admin') || Gate::allows('is-inspector')) {
-            $story = Story::findOrFail($id)->delete();
+            $story = $this->storyRepository->delete($id);
             if ($story != null) {
                 return response()->json([
                     'message' => 'success',
@@ -116,7 +116,7 @@ class StoryController extends Controller
                 ]);
             }
         } else {
-            abort(403);
+            return response('Unauthorizaed action.', 403);
         }
     }
 }
