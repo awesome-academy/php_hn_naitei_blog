@@ -8,32 +8,31 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoryRequest;
+use App\Repositories\Contracts\StoryRepositoryInterface;
 
 class StoryController extends Controller
 {
-    public function __construct()
+    protected $storyRepository;
+
+    public function __construct(StoryRepositoryInterface $storyRepository)
     {
         $this->middleware('auth');
-    }
-
-    public function index()
-    {
-        abort(404);
+        $this->storyRepository = $storyRepository;
     }
 
     public function store(StoryRequest $request)
     {
         if (Gate::allows('is-active')) {
-            $storyDataArray = array(
+            $storyDataArray = [
                 "categories_id" => $request->category,
                 "content" => $request->content,
                 "status" => $request->status,
                 "users_id" => Auth::id(),
-            );
+            ];
            
-            $story = Story::create($storyDataArray);
+            $story = $this->storyRepository->create($storyDataArray);
             if ($request->photos != null) {
-                foreach ($request->photos as $photo) {
+                foreach (array($request->photos) as $photo) {
                     $newImageName = 'storage/image/' .uniqid() . '.' . $photo->extension();
                     $photo->move(public_path('storage/image'), $newImageName);
                     $story->images()->create([
@@ -44,13 +43,13 @@ class StoryController extends Controller
     
             return redirect()->route('home')->with('message', trans('message.create_success'));
         } else {
-            abort(403);
+            return response('Unauthorizaed action.', 403);
         }
     }
 
     public function show($id)
     {
-        $story= Story::findOrFail($id);
+        $story= $this->storyRepository->findOrFail($id);
         $user = $story->user;
 
         return view('homepage.story_detail', compact('story', 'user'));
@@ -58,7 +57,7 @@ class StoryController extends Controller
 
     public function edit($id)
     {
-        $story = Story::findOrFail($id);
+        $story = $this->storyRepository->findOrFail($id);
         $this->authorize('update', $story);
         $categories = Category::all();
 
@@ -67,7 +66,7 @@ class StoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $story = Story::findOrFail($id);
+        $story = $this->storyRepository->findOrFail($id);
         $this->authorize('update', $story);
 
         $story->update([
@@ -76,8 +75,8 @@ class StoryController extends Controller
         ]);
         if ($request->photos != null) {
             $story->images()->delete();
-            if (count($request->photos) > 0) {
-                foreach ($request->photos as $photo) {
+            if (count(array($request->photos)) > 0) {
+                foreach (array($request->photos) as $photo) {
                     $newImageName = 'storage/image/' .uniqid() . '.' . $photo->extension();
                     $photo->move(public_path('storage/image'), $newImageName);
                     $story->images()->create([
@@ -92,11 +91,11 @@ class StoryController extends Controller
 
     public function destroy($id)
     {
-        $story = Story::findOrFail($id);
+        $story = $this->storyRepository->findOrFail($id);
         $this->authorize('delete', $story);
 
         $story->images()->delete();
-        Story::withTrashed()->where('id', $id)->forceDelete();
+        $this->storyRepository->forceDelete($id);
 
         return response()->json([
             'success' =>  trans('message.delete_success')
@@ -106,7 +105,7 @@ class StoryController extends Controller
     public function hideStory($id)
     {
         if (Gate::allows('is-admin') || Gate::allows('is-inspector')) {
-            $story = Story::findOrFail($id)->delete();
+            $story = $this->storyRepository->delete($id);
             if ($story != null) {
                 return response()->json([
                     'message' => 'success',
@@ -117,7 +116,7 @@ class StoryController extends Controller
                 ]);
             }
         } else {
-            abort(403);
+            return response('Unauthorizaed action.', 403);
         }
     }
 }
